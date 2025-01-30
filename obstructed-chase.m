@@ -16,17 +16,27 @@ function dstatedt = foxode(~,state, vr_0,mu_r, vf_0,mu_f)
     rabbit_direction = [cos(pi/4); sin(pi/4)];
     dposfdt = zeros(2,1);
     
+    % Logic for warehouse obstructing the predator's view
+    
     if (pos_r(1)==pos_f(1)) && pos_f(1)<200
         dposfdt(2) = vel_f;
         dposfdt(1) = 0;
    
     else
-        m = (pos_f(2) - pos_r(2))/(pos_f(1) - pos_r(1));
+        % Draw line between predator and prey
+        m = (pos_f(2) - pos_r(2))/(pos_f(1) - pos_r(1)); 
         c = pos_r(2)-m*pos_r(1);
-        y_intersection = m*200+c; %y
+        
+        y_intersection = m*200+c; %y-intersection with warehouse
+        % If we are before this position we can never see the prey
+        % anyway, and the shortest path is to go to the corner of the
+        % warehouse
         if pos_f(2)<-400 && pos_f(1)>200
             dposfdt(1) = vel_f * (200 - pos_f(1)) / dist_point;
             dposfdt(2) = vel_f * (-400 - pos_f(2)) / dist_point;
+        % If there is an intersection with the top part of the
+        % warehouse we move directly upwards
+        % this is the only wall we have to check intersection with
         elseif y_intersection >= -400 && y_intersection <= 0
             if (pos_r(1)>200 && pos_f(1)<200)    
                 dposfdt(1) = 0;
